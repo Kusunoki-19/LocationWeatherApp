@@ -9,8 +9,8 @@ import SwiftUI
 
 // ページ一覧.
 enum Pages : String , CaseIterable , Identifiable {
-    case TodaysWeather   = "Today's Weather"
-    case WeeklyWeather   = "Weekly Weather"
+    case TodaysWeather   = "Today"
+    case WeeklyWeather   = "Week"
     
     var id: Self { self }
 }
@@ -28,6 +28,8 @@ struct ContentView: View {
     
     
     var body: some View {
+        
+        // main content.
         ZStack(alignment: .bottom) {
             ChosenWeatherPageView(
                 selectedPage: selectedPage,
@@ -39,32 +41,36 @@ struct ContentView: View {
             )
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        
+        // Top overlay.
         .overlay(
-            VStack {
-                Button("Get Location \(Image(systemName: "location.square.fill"))",action: locationService.requestUpdateLocation).padding()
-                HStack {
-                    VStack {
-                        Text("緯度")
-                        Text("経度")
-                        Text("直近気温")
-                        Text("直近天気")
+            HStack {
+                Picker("Page", selection: $selectedPage) {
+                    ForEach(Pages.allCases) { page in
+                        Text(page.rawValue)
                     }
-                    VStack {
-                        Text(String(format: "%.5f", locationService.currentLatitude != nil ? locationService.currentLatitude! : 0))
-                        Text(String(format: "%.5f", locationService.currentLongitude != nil ? locationService.currentLongitude! : 0))
-                        Text(String(format: "%f", locationService.currentTemparature))
-                        Text(String(format: "%d", locationService.currentWeathercodes))
-                   }
                 }
-            }
-            ,alignment: .topTrailing)
-        .overlay(
-            Picker("Page", selection: $selectedPage) {
-                ForEach(Pages.allCases) { page in
-                    Text(page.rawValue)
+                .pickerStyle(.segmented)
+                .frame(width: 150)
+                
+                Spacer()
+                
+                VStack {
+                    HStack {
+                        Button("\(Image(systemName: "arrow.clockwise"))",action: locationService.requestUpdateLocation).padding()
+                        VStack {
+                            Text("latitude")
+                            Text("longitude")
+                        }
+                        VStack {
+                            Text(String(format: "%.2f", locationService.currentLatitude != nil ? locationService.currentLatitude! : 0))
+                            Text(String(format: "%.2f", locationService.currentLongitude != nil ? locationService.currentLongitude! : 0))
+                        }
+                    }
                 }
-            }.pickerStyle(.segmented)
-            ,alignment: .bottom)
+            }.padding()
+            ,alignment: .top
+        )
     }
 }
 
