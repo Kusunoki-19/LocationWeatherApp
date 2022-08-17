@@ -41,9 +41,13 @@ struct TodayWeatherView: View {
     
     var body: some View {
         VStack {
-            Text("Today's Weather Page")
-            Text(descriptorByWeathercode[currentWeathercode]!)
-            Text(String(format: "Temparature:%f", currentTemparature))
+            Text(String(format: "%.1f°", currentTemparature))
+                .font(.system(.largeTitle, design: .rounded))
+            Text(String(format: "Present Weather [WMO Code 4677]:%d", currentWeathercode))
+            HStack {
+                Text("Description:")
+                Text(descriptorByWeathercode[currentWeathercode]!)
+            }
         }
     }
 }
@@ -59,8 +63,36 @@ struct WeeklyWeatherView: View {
     var maxTemparatureOfWeek : Array<Float>
     var minTemparatureOfWeek : Array<Float>
     var body: some View {
+        
         VStack {
-            Text("Weekly Weather Page")
+            
+            ZStack {
+                Rectangle()
+                    .fill(Color.gray)
+                    .frame(width: .infinity, height: .infinity)
+                
+                LineGraph( plotsX:Array(stride(from: 0.0, through: Float(maxTemparatureOfWeek.count-1), by: 1.0)),
+                           plotsY:maxTemparatureOfWeek,
+                           graphXMax: 0 ,
+                           graphXMin: Float(maxTemparatureOfWeek.count-1),
+                           graphYMax: maxTemparatureOfWeek.max()!+10,
+                           graphYMin: minTemparatureOfWeek.min()!-10,
+                           viewXSize: .infinity,
+                           viewYSize: 100,
+                           graphColor: Color.red
+                )
+                LineGraph( plotsX:Array(stride(from: 0.0, through: Float(minTemparatureOfWeek.count-1), by: 1.0)),
+                           plotsY:minTemparatureOfWeek,
+                           graphXMax: 0 ,
+                           graphXMin: Float(minTemparatureOfWeek.count-1),
+                           graphYMax: maxTemparatureOfWeek.max()!+10,
+                           graphYMin: minTemparatureOfWeek.min()!-10,
+                           viewXSize: .infinity,
+                           viewYSize: 100,
+                           graphColor: Color.blue
+                )
+            }
+            
             HStack {
                 VStack {
                     ForEach(weathercodeOfWeek, id: \.self) { weathercode in
@@ -77,32 +109,6 @@ struct WeeklyWeatherView: View {
                         Text(String(format: "%f", minTemp))
                     }
                 }
-            }
-            ZStack {
-                Rectangle()
-                    .fill(Color.gray)
-                    .frame(width: 200, height: 200)
-
-                LineGraph( plotsX:Array(stride(from: 0.0, through: Float(maxTemparatureOfWeek.count-1), by: 1.0)),
-                       plotsY:maxTemparatureOfWeek,
-                       graphXMax: 0 ,
-                       graphXMin: Float(maxTemparatureOfWeek.count-1),
-                       graphYMax: 0,
-                       graphYMin: 40,
-                       viewXSize: 200,
-                       viewYSize: 200,
-                       graphColor: Color.red
-                )
-                LineGraph( plotsX:Array(stride(from: 0.0, through: Float(minTemparatureOfWeek.count-1), by: 1.0)),
-                       plotsY:minTemparatureOfWeek,
-                       graphXMax: 0 ,
-                       graphXMin: Float(minTemparatureOfWeek.count-1),
-                       graphYMax: 0,
-                       graphYMin: 40,
-                       viewXSize: 200,
-                       viewYSize: 200,
-                       graphColor: Color.blue
-                )
             }
         }
     }
@@ -147,15 +153,26 @@ struct LineGraph: View {
     var body: some View {
         Path { path in
             
-            path.move(to: CGPoint(
-                x:Int(graphXToViewX(plotsX[0])),
-                y:Int(graphYToViewY(plotsY[0]))
-            ))
-            for i in 1..<plotsY.count {
-                path.addLine(to: CGPoint(
-                    x:Int(graphXToViewX(plotsX[i])),
-                    y:Int(graphYToViewY(plotsY[i]))
-                ))
+            if plotsX.count != plotsY.count { return }
+            if plotsX.count <= 0  { return }
+            
+            
+            for i in 0..<plotsY.count {
+                if plotsX[i].isNaN { return }
+                if plotsY[i].isNaN { return }
+                if plotsX[i].isInfinite { return }
+                if plotsY[i].isInfinite { return }
+                if i == 0 {
+                    path.move(to: CGPoint(
+                        x:Int(round(graphXToViewX(plotsX[0]))),
+                        y:Int(round(graphYToViewY(plotsY[0])))
+                    ))
+                } else {
+                    path.addLine(to: CGPoint(
+                        x:Int(round(graphXToViewX(plotsX[i]))),
+                        y:Int(round(graphYToViewY(plotsY[i])))
+                    ))
+                }
             }
         }
         .stroke()
@@ -164,6 +181,7 @@ struct LineGraph: View {
     }
 }
 
+// From WMO Weathercodes.
 let descriptorByWeathercode : [Int: String] = [
     00 : "Cloud development not observed or not observable *",
     01 : "Clouds generally dissolving or becoming less developed *",
