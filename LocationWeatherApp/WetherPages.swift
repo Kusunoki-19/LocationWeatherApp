@@ -50,70 +50,72 @@ struct TodayWeatherView: View {
     var todayMaxTemparature : Float?
     
     var body: some View {
-        VStack {
-            if currentWeathercode != nil && currentTemparature != nil && todayWeathercode != nil && todayMinTemparature != nil && todayMaxTemparature != nil {
-                Rectangle()
-                    .fill(Color.gray)
-                    .frame(height:1)
-                
-                HStack {
-                    Text("Present")
-                        .font(.system(.largeTitle, design: .rounded))
+        ScrollView {
+            VStack {
+                if currentWeathercode != nil && currentTemparature != nil && todayWeathercode != nil && todayMinTemparature != nil && todayMaxTemparature != nil {
+                    Rectangle()
+                        .fill(Color.gray)
+                        .frame(height:1)
+                    
+                    HStack {
+                        Text("Present")
+                            .font(.system(.largeTitle, design: .rounded))
+                        Spacer()
+                        Text(String(format: "%.1f°", currentTemparature!))
+                            .font(.system(.largeTitle, design: .rounded))
+                    }.padding()
+                    
+                    VStack {
+                        HStack {
+                            Text("Weathercode")
+                                .frame(width: 120)
+                            Text("Description")
+                            Spacer()
+                        }
+                        HStack {
+                            Text(String(format: "%d", currentWeathercode!))
+                                .frame(width: 120)
+                            Text(descriptorByWeathercode[currentWeathercode!]!)
+                            Spacer()
+                        }
+                    }.padding()
+                    
+                    
+                    Rectangle()
+                        .fill(Color.gray)
+                        .frame(height:1)
+                    
+                    
+                    
+                    HStack {
+                        Text("Today")
+                            .font(.system(.largeTitle, design: .rounded))
+                        Spacer()
+                        Text(String(format: "Max: %.1f°", todayMaxTemparature!))
+                        Text(String(format: "Min: %.1f°", todayMinTemparature!))
+                    }.padding()
+                    
+                    VStack {
+                        HStack {
+                            Text("Weathercode")
+                                .frame(width: 120)
+                            Text("Description")
+                            Spacer()
+                        }
+                        HStack {
+                            Text(String(format: "%d", todayWeathercode!))
+                                .frame(width: 120)
+                            Text(descriptorByWeathercode[todayWeathercode!]!)
+                            Spacer()
+                        }
+                    }.padding()
+                    
+                    Rectangle()
+                        .fill(Color.gray)
+                        .frame(height:1)
+                    
                     Spacer()
-                    Text(String(format: "%.1f°", currentTemparature!))
-                        .font(.system(.largeTitle, design: .rounded))
-                }.padding()
-                
-                VStack {
-                    HStack {
-                        Text("Weathercode")
-                            .frame(width: 120)
-                        Text("Description")
-                        Spacer()
-                    }
-                    HStack {
-                        Text(String(format: "%d", currentWeathercode!))
-                            .frame(width: 120)
-                        Text(descriptorByWeathercode[currentWeathercode!]!)
-                        Spacer()
-                    }
-                }.padding()
-                
-                
-                Rectangle()
-                    .fill(Color.gray)
-                    .frame(height:1)
-                
-                
-                
-                HStack {
-                    Text("Today")
-                        .font(.system(.largeTitle, design: .rounded))
-                    Spacer()
-                    Text(String(format: "Max: %.1f°", todayMaxTemparature!))
-                    Text(String(format: "Min: %.1f°", todayMinTemparature!))
-                }.padding()
-                
-                VStack {
-                    HStack {
-                        Text("Weathercode")
-                            .frame(width: 120)
-                        Text("Description")
-                        Spacer()
-                    }
-                    HStack {
-                        Text(String(format: "%d", todayWeathercode!))
-                            .frame(width: 120)
-                        Text(descriptorByWeathercode[todayWeathercode!]!)
-                        Spacer()
-                    }
-                }.padding()
-                
-                Rectangle()
-                    .fill(Color.gray)
-                    .frame(height:1)
-                
-                Spacer()
+                }
             }
         }
         .padding()
@@ -168,10 +170,12 @@ struct WeeklyWeatherView: View {
                         Text("Min[°]")
                             .frame(width: 60)
                     }
+                    
                     Rectangle()
                         .fill(Color.gray)
                         .frame(height:1)
-                    if (weathercodeOfWeek.count > 0) {
+                    
+                    if dateOfWeek.count > 0 && weathercodeOfWeek.count == dateOfWeek.count && maxTemparatureOfWeek.count == dateOfWeek.count && minTemparatureOfWeek.count == dateOfWeek.count  {
                         ForEach(0...(weathercodeOfWeek.count-1) , id:\.self) { i in
                             HStack {
                                 Text(dateOfWeek[i])
