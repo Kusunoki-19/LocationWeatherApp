@@ -50,14 +50,17 @@ struct ContentView: View {
                                 .font(.system(.footnote, design: .rounded))
                             Text("longitude")
                                 .font(.system(.footnote, design: .rounded))
+
                         }
                         VStack {
-                            Text(String(format: "%.2f", locationService.currentLatitude != nil ? locationService.currentLatitude! : 0))
+                            Text(String(format: "%.1f..", locationService.currentLatitude != nil ? locationService.currentLatitude! : 0))
                                 .font(.system(.footnote, design: .rounded))
-                            Text(String(format: "%.2f", locationService.currentLongitude != nil ? locationService.currentLongitude! : 0))
+                            Text(String(format: "%.1f..", locationService.currentLongitude != nil ? locationService.currentLongitude! : 0))
                                 .font(.system(.footnote, design: .rounded))
                         }
                     }
+                    Text("(Weathercode based on WMOWeathercode)")
+                        .font(.system(.footnote, design: .rounded))
                 }
             }.padding()
             
