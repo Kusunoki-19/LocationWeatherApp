@@ -47,11 +47,15 @@ struct ContentView: View {
                         Button("\(Image(systemName: "arrow.clockwise"))",action: locationService.requestUpdateLocation).padding()
                         VStack {
                             Text("latitude")
+                                .font(.system(.footnote, design: .rounded))
                             Text("longitude")
+                                .font(.system(.footnote, design: .rounded))
                         }
                         VStack {
                             Text(String(format: "%.2f", locationService.currentLatitude != nil ? locationService.currentLatitude! : 0))
+                                .font(.system(.footnote, design: .rounded))
                             Text(String(format: "%.2f", locationService.currentLongitude != nil ? locationService.currentLongitude! : 0))
+                                .font(.system(.footnote, design: .rounded))
                         }
                     }
                 }
