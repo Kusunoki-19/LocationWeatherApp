@@ -152,24 +152,27 @@ struct WeeklyWeatherView: View {
                 // 最低気温の折れ線グラフ.
                 LineGraph( plotsX:Array(stride(from: 0.0, through: Float(minTemparatureOfWeek.count-1), by: 1.0)),
                            plotsY:minTemparatureOfWeek,
-                           graphXMax: 0 ,
-                           graphXMin: Float(minTemparatureOfWeek.count-1),
+                           graphXMax: -0.1 ,
+                           graphXMin: Float(minTemparatureOfWeek.count-1)+0.1,
                            graphYMax: (maxTemparatureOfWeek.max() == nil ? 0 : maxTemparatureOfWeek.max()!) + 5,
                            graphYMin: (minTemparatureOfWeek.min() == nil ? 0 : minTemparatureOfWeek.min()!) - 5,
                            graphColor: Color.blue,
-                           lineWidth: 2
+                           lineWidth: 2,
+                           hasPlotDot: true
                 )
                 // 最高気温の折れ線グラフ.
                 LineGraph( plotsX:Array(stride(from: 0.0, through: Float(maxTemparatureOfWeek.count-1), by: 1.0)),
                            plotsY:maxTemparatureOfWeek,
-                           graphXMax: 0 ,
-                           graphXMin: Float(maxTemparatureOfWeek.count-1),
+                           graphXMax: -0.1 ,
+                           graphXMin: Float(minTemparatureOfWeek.count-1)+0.1,
                            graphYMax: (maxTemparatureOfWeek.max() == nil ? 0 : maxTemparatureOfWeek.max()!) + 5,
                            graphYMin: (minTemparatureOfWeek.min() == nil ? 0 : minTemparatureOfWeek.min()!) - 5,
                            graphColor: Color.red,
-                           lineWidth: 2
+                           lineWidth: 2,
+                           hasPlotDot: true
 
                 )
+                
                 Rectangle()
                     .fill(Color.clear)
                     .border(Color.black, width: 1)
@@ -234,6 +237,7 @@ struct LineGraph: View {
     var graphYMin : Float
     var graphColor : Color = Color.black
     var lineWidth : CGFloat = 1.0
+    var hasPlotDot : Bool = false
     
     // preMap系から、mapped系への座標変換.
     private func mappedValue(_ preMapValue: Float, _ preMapMin: Float, _ preMapMax: Float, _ mappedMax: Float, _ mappedMin: Float) -> Float{
@@ -284,6 +288,30 @@ struct LineGraph: View {
             }
             .stroke(graphColor, lineWidth:lineWidth)
             .frame(width: CGFloat(geometry.size.width), height: CGFloat(geometry.size.height))
+            
+            if hasPlotDot  && plotsX.count == plotsY.count {
+                let viewXSize = Float(geometry.size.width)
+                let viewYSize = Float(geometry.size.height)
+                let dotSize = Float(lineWidth+4.0)
+                ForEach (0...(plotsY.count-1), id:\.self) { i in
+                    // 表示上のXYを各点で計算.
+                    let xPoint = graphXToViewX(
+                        plotsX[i], graphXMin, graphXMax, viewXSize
+                    )
+                    let yPoint = graphYToViewY(
+                        plotsY[i], graphYMin, graphYMax, viewYSize
+                    )
+                    
+                    
+                    Rectangle ()
+                        .fill(graphColor)
+                        .frame(width: CGFloat(dotSize), height: CGFloat(dotSize))
+                        .position(
+                            x: CGFloat(xPoint),
+                            y: CGFloat(yPoint)
+                        )
+                }
+            }
         }
     }
 }
