@@ -66,39 +66,52 @@ struct WeeklyWeatherView: View {
         VStack {
             ZStack {
                 Rectangle()
-                    .fill(Color.gray)
+                    .fill(Color.white)
+                    .border(Color.black, width: 1)
                 LineGraph( plotsX:Array(stride(from: 0.0, through: Float(maxTemparatureOfWeek.count-1), by: 1.0)),
                            plotsY:maxTemparatureOfWeek,
                            graphXMax: 0 ,
                            graphXMin: Float(maxTemparatureOfWeek.count-1),
-                           graphYMax: (maxTemparatureOfWeek.max() == nil ? 0 : maxTemparatureOfWeek.max()!) + 10,
-                           graphYMin: (minTemparatureOfWeek.min() == nil ? 0 : minTemparatureOfWeek.min()!) - 10,
+                           graphYMax: (maxTemparatureOfWeek.max() == nil ? 0 : maxTemparatureOfWeek.max()!) + 5,
+                           graphYMin: (minTemparatureOfWeek.min() == nil ? 0 : minTemparatureOfWeek.min()!) - 5,
                            graphColor: Color.red
                 )
                 LineGraph( plotsX:Array(stride(from: 0.0, through: Float(minTemparatureOfWeek.count-1), by: 1.0)),
                            plotsY:minTemparatureOfWeek,
                            graphXMax: 0 ,
                            graphXMin: Float(minTemparatureOfWeek.count-1),
-                           graphYMax: (maxTemparatureOfWeek.max() == nil ? 0 : maxTemparatureOfWeek.max()!) + 10,
-                           graphYMin: (minTemparatureOfWeek.min() == nil ? 0 : minTemparatureOfWeek.min()!) - 10,
+                           graphYMax: (maxTemparatureOfWeek.max() == nil ? 0 : maxTemparatureOfWeek.max()!) + 5,
+                           graphYMin: (minTemparatureOfWeek.min() == nil ? 0 : minTemparatureOfWeek.min()!) - 5,
                            graphColor: Color.blue
                 )
             }
+            .frame(height: 100)
             
-            HStack {
-                VStack {
-                    ForEach(weathercodeOfWeek, id: \.self) { weathercode in
-                        Text(descriptorByWeathercode[weathercode]!)
-                    }
+            VStack{
+                HStack {
+                    Text("Weather description")
+                    Spacer()
+                    Text("max[°]")
+                        .frame(width: 60)
+                    Text("min[°]")
+                        .frame(width: 60)
                 }
-                VStack {
-                    ForEach(maxTemparatureOfWeek, id: \.self) { maxTemp in
-                        Text(String(format: "%f", maxTemp))
-                    }
-                }
-                VStack{
-                    ForEach(minTemparatureOfWeek, id: \.self) { minTemp in
-                        Text(String(format: "%f", minTemp))
+                Rectangle()
+                    .fill(Color.gray)
+                    .frame(height:1)
+                if (weathercodeOfWeek.count > 0) {
+                    ForEach(0...(weathercodeOfWeek.count-1) , id:\.self) { i in
+                        HStack {
+                            Text(descriptorByWeathercode[weathercodeOfWeek[i]]!)
+                            Spacer()
+                            Text(String(format: "%.1f", maxTemparatureOfWeek[i]))
+                                .frame(width: 60)
+                            Text(String(format: "%.1f", minTemparatureOfWeek[i]))
+                                .frame(width: 60)
+                        }
+                        Rectangle()
+                            .fill(Color.gray)
+                            .frame(height:1)
                     }
                 }
             }
@@ -121,18 +134,22 @@ struct LineGraph: View {
     var graphYMin : Float
     var graphColor : Color = Color.black
     
+    // preMap系から、mapped系への座標変換.
     private func mappedValue(_ preMapValue: Float, _ preMapMin: Float, _ preMapMax: Float, _ mappedMax: Float, _ mappedMin: Float) -> Float{
         return (preMapValue - preMapMin)/(preMapMax - preMapMin) * (mappedMax - mappedMin) + mappedMin
     }
     
+    // min - max の中央値で反対の位置（対称な位置)への座標変換.
     private func symmetryValueBetweenMinMax(_ value: Float, _ min: Float, _ max: Float) -> Float{
         return max - (value - min)
     }
     
+    // グラフ上のX値から見た目のX座標に変換.
     private func graphXToViewX(_ graphX: Float, _ graphXMin : Float, _ graphXMax : Float, _ viewXSize : Float) -> Float {
         return mappedValue(graphX, graphXMin, graphXMax, 0, viewXSize)
     }
     
+    // グラフ上のY値から見た目のY座標に変換.
     private func graphYToViewY(_ graphY: Float, _ graphYMin : Float, _ graphYMax : Float, _ viewYSize : Float) -> Float {
 //        return symmetryValueBetweenMinMax(
 //            mappedValue(graphY, graphYMin, graphYMax, 0, viewYSize),
