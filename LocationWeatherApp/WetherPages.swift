@@ -63,32 +63,24 @@ struct WeeklyWeatherView: View {
     var maxTemparatureOfWeek : Array<Float>
     var minTemparatureOfWeek : Array<Float>
     var body: some View {
-        
         VStack {
-            
             ZStack {
                 Rectangle()
                     .fill(Color.gray)
-                    .frame(width: .infinity, height: .infinity)
-                
                 LineGraph( plotsX:Array(stride(from: 0.0, through: Float(maxTemparatureOfWeek.count-1), by: 1.0)),
                            plotsY:maxTemparatureOfWeek,
                            graphXMax: 0 ,
                            graphXMin: Float(maxTemparatureOfWeek.count-1),
-                           graphYMax: maxTemparatureOfWeek.max()!+10,
-                           graphYMin: minTemparatureOfWeek.min()!-10,
-                           viewXSize: .infinity,
-                           viewYSize: 100,
+                           graphYMax: (maxTemparatureOfWeek.max() == nil ? 0 : maxTemparatureOfWeek.max()!) + 10,
+                           graphYMin: (minTemparatureOfWeek.min() == nil ? 0 : minTemparatureOfWeek.min()!) - 10,
                            graphColor: Color.red
                 )
                 LineGraph( plotsX:Array(stride(from: 0.0, through: Float(minTemparatureOfWeek.count-1), by: 1.0)),
                            plotsY:minTemparatureOfWeek,
                            graphXMax: 0 ,
                            graphXMin: Float(minTemparatureOfWeek.count-1),
-                           graphYMax: maxTemparatureOfWeek.max()!+10,
-                           graphYMin: minTemparatureOfWeek.min()!-10,
-                           viewXSize: .infinity,
-                           viewYSize: 100,
+                           graphYMax: (maxTemparatureOfWeek.max() == nil ? 0 : maxTemparatureOfWeek.max()!) + 10,
+                           graphYMin: (minTemparatureOfWeek.min() == nil ? 0 : minTemparatureOfWeek.min()!) - 10,
                            graphColor: Color.blue
                 )
             }
@@ -127,8 +119,6 @@ struct LineGraph: View {
     var graphXMin : Float
     var graphYMax : Float
     var graphYMin : Float
-    var viewXSize : Float
-    var viewYSize : Float
     var graphColor : Color = Color.black
     
     private func mappedValue(_ preMapValue: Float, _ preMapMin: Float, _ preMapMax: Float, _ mappedMax: Float, _ mappedMin: Float) -> Float{
@@ -139,45 +129,45 @@ struct LineGraph: View {
         return max - (value - min)
     }
     
-    private func graphXToViewX(_ graphX: Float) -> Float {
+    private func graphXToViewX(_ graphX: Float, _ graphXMin : Float, _ graphXMax : Float, _ viewXSize : Float) -> Float {
         return mappedValue(graphX, graphXMin, graphXMax, 0, viewXSize)
     }
     
-    private func graphYToViewY(_ graphY: Float) -> Float {
-        return symmetryValueBetweenMinMax(
-            mappedValue(graphY, graphYMin, graphYMax, 0, viewYSize),
-            0, viewYSize)
-        
+    private func graphYToViewY(_ graphY: Float, _ graphYMin : Float, _ graphYMax : Float, _ viewYSize : Float) -> Float {
+//        return symmetryValueBetweenMinMax(
+//            mappedValue(graphY, graphYMin, graphYMax, 0, viewYSize),
+//            0, viewYSize)
+        return mappedValue(graphY, graphYMin, graphYMax, 0, viewYSize)
     }
     
     var body: some View {
-        Path { path in
-            
-            if plotsX.count != plotsY.count { return }
-            if plotsX.count <= 0  { return }
-            
-            
-            for i in 0..<plotsY.count {
-                if plotsX[i].isNaN { return }
-                if plotsY[i].isNaN { return }
-                if plotsX[i].isInfinite { return }
-                if plotsY[i].isInfinite { return }
-                if i == 0 {
-                    path.move(to: CGPoint(
-                        x:Int(round(graphXToViewX(plotsX[0]))),
-                        y:Int(round(graphYToViewY(plotsY[0])))
-                    ))
-                } else {
-                    path.addLine(to: CGPoint(
-                        x:Int(round(graphXToViewX(plotsX[i]))),
-                        y:Int(round(graphYToViewY(plotsY[i])))
-                    ))
+        GeometryReader { geometry in
+            Path { path in
+                if plotsX.count != plotsY.count { return }
+                let viewXSize = Float(geometry.size.width)
+                let viewYSize = Float(geometry.size.height)
+                
+                // 表示上のXYを各点で計算しながらPath描画
+                for i in 0..<plotsY.count {
+                    let xPoint = Int(round(graphXToViewX(
+                        plotsX[i], graphXMin, graphXMax, viewXSize
+                    )))
+                    let yPoint = Int(round(graphYToViewY(
+                        plotsY[i], graphYMin, graphYMax, viewYSize
+                    )))
+                    let point = CGPoint(x:xPoint, y:yPoint)
+                    
+                    if i == 0 {
+                        path.move(to: point)
+                    } else {
+                        path.addLine(to: point)
+                    }
                 }
             }
+            .stroke()
+            .fill(graphColor)
+            .frame(width: CGFloat(geometry.size.width), height: CGFloat(geometry.size.height))
         }
-        .stroke()
-        .fill(graphColor)
-        .frame(width: CGFloat(viewXSize), height: CGFloat(viewYSize))
     }
 }
 
