@@ -15,6 +15,7 @@ struct ChosenWeatherPageView: View {
     
     var currentWeathercode  : Int = 0
     var currentTemparature   : Float = 0
+    var dateOfWeek   : Array<String> = []
     var weathercodeOfWeek   : Array<Int> = []
     var maxTemparatureOfWeek : Array<Float> = []
     var minTemparatureOfWeek : Array<Float> = []
@@ -22,9 +23,15 @@ struct ChosenWeatherPageView: View {
     var body: some View {
         switch selectedPage {
         case .TodaysWeather:
-            TodayWeatherView(currentWeathercode: currentWeathercode, currentTemparature: currentTemparature)
+            TodayWeatherView(
+                currentWeathercode: currentWeathercode,
+                currentTemparature: currentTemparature,
+                todayWeathercode: weathercodeOfWeek.first,
+                todayMinTemparature: minTemparatureOfWeek.first,
+                todayMaxTemparature: maxTemparatureOfWeek.first
+            )
         case .WeeklyWeather:
-            WeeklyWeatherView(weathercodeOfWeek: weathercodeOfWeek, maxTemparatureOfWeek: maxTemparatureOfWeek, minTemparatureOfWeek: minTemparatureOfWeek)
+            WeeklyWeatherView(dateOfWeek: dateOfWeek, weathercodeOfWeek: weathercodeOfWeek, maxTemparatureOfWeek: maxTemparatureOfWeek, minTemparatureOfWeek: minTemparatureOfWeek)
         }
     }
 }
@@ -36,15 +43,82 @@ struct ChosenWeatherPageView_Previews: PreviewProvider {
 }
 
 struct TodayWeatherView: View {
-    var currentWeathercode : Int
-    var currentTemparature : Float
+    var currentWeathercode : Int?
+    var currentTemparature : Float?
+    var todayWeathercode : Int?
+    var todayMinTemparature : Float?
+    var todayMaxTemparature : Float?
     
     var body: some View {
-        VStack {
-            Text("Today's Weather Page")
-            Text(descriptorByWeathercode[currentWeathercode]!)
-            Text(String(format: "Temparature:%f", currentTemparature))
+        ScrollView {
+            VStack {
+                if currentWeathercode != nil && currentTemparature != nil && todayWeathercode != nil && todayMinTemparature != nil && todayMaxTemparature != nil {
+                    Rectangle()
+                        .fill(Color.gray)
+                        .frame(height:1)
+                    
+                    HStack {
+                        Text("Present")
+                            .font(.system(.largeTitle, design: .rounded))
+                        Spacer()
+                        Text(String(format: "%.1f°", currentTemparature!))
+                            .font(.system(.largeTitle, design: .rounded))
+                    }.padding()
+                    
+                    VStack {
+                        HStack {
+                            Text("Weathercode")
+                                .frame(width: 120)
+                            Text("Description")
+                            Spacer()
+                        }
+                        HStack {
+                            Text(String(format: "%d", currentWeathercode!))
+                                .frame(width: 120)
+                            Text(descriptorByWeathercode[currentWeathercode!]!)
+                            Spacer()
+                        }
+                    }.padding()
+                    
+                    
+                    Rectangle()
+                        .fill(Color.gray)
+                        .frame(height:1)
+                    
+                    
+                    
+                    HStack {
+                        Text("Today")
+                            .font(.system(.largeTitle, design: .rounded))
+                        Spacer()
+                        Text(String(format: "Max: %.1f°", todayMaxTemparature!))
+                        Text(String(format: "Min: %.1f°", todayMinTemparature!))
+                    }.padding()
+                    
+                    VStack {
+                        HStack {
+                            Text("Weathercode")
+                                .frame(width: 120)
+                            Text("Description")
+                            Spacer()
+                        }
+                        HStack {
+                            Text(String(format: "%d", todayWeathercode!))
+                                .frame(width: 120)
+                            Text(descriptorByWeathercode[todayWeathercode!]!)
+                            Spacer()
+                        }
+                    }.padding()
+                    
+                    Rectangle()
+                        .fill(Color.gray)
+                        .frame(height:1)
+                    
+                    Spacer()
+                }
+            }
         }
+        .padding()
     }
 }
 
@@ -55,62 +129,108 @@ struct TodayWeatherView_Previews: PreviewProvider {
 }
 
 struct WeeklyWeatherView: View {
+    var dateOfWeek   : Array<String>
     var weathercodeOfWeek   : Array<Int>
     var maxTemparatureOfWeek : Array<Float>
     var minTemparatureOfWeek : Array<Float>
+    
+
     var body: some View {
         VStack {
-            Text("Weekly Weather Page")
-            HStack {
-                VStack {
-                    ForEach(weathercodeOfWeek, id: \.self) { weathercode in
-                        Text(descriptorByWeathercode[weathercode]!)
-                    }
-                }
-                VStack {
-                    ForEach(maxTemparatureOfWeek, id: \.self) { maxTemp in
-                        Text(String(format: "%f", maxTemp))
-                    }
-                }
-                VStack{
-                    ForEach(minTemparatureOfWeek, id: \.self) { minTemp in
-                        Text(String(format: "%f", minTemp))
-                    }
-                }
-            }
             ZStack {
                 Rectangle()
-                    .fill(Color.gray)
-                    .frame(width: 200, height: 200)
-
-                LineGraph( plotsX:Array(stride(from: 0.0, through: Float(maxTemparatureOfWeek.count-1), by: 1.0)),
-                       plotsY:maxTemparatureOfWeek,
-                       graphXMax: 0 ,
-                       graphXMin: Float(maxTemparatureOfWeek.count-1),
-                       graphYMax: 0,
-                       graphYMin: 40,
-                       viewXSize: 200,
-                       viewYSize: 200,
-                       graphColor: Color.red
-                )
+                    .fill(Color.white)
+                // 10°, 20°, 30° 気温目盛線.
+                ForEach(1...3 , id:\.self) { i in
+                    LineGraph( plotsX:[0, 1],
+                               plotsY:[Float(i*10),Float(i*10)],
+                               graphXMax: 0 ,
+                               graphXMin: 1 ,
+                               graphYMax: (maxTemparatureOfWeek.max() == nil ? 0 : maxTemparatureOfWeek.max()!) + 5,
+                               graphYMin: (minTemparatureOfWeek.min() == nil ? 0 : minTemparatureOfWeek.min()!) - 5,
+                               graphColor: Color.gray
+                    )
+                }
+                let xDataLabels : Array<String> = dateOfWeek.map{
+                    $0.components(separatedBy: "-").count == 3 ? ($0.components(separatedBy: "-")[1] + "/" + $0.components(separatedBy: "-")[2]) : ""
+                }
+                // 最低気温の折れ線グラフ.
                 LineGraph( plotsX:Array(stride(from: 0.0, through: Float(minTemparatureOfWeek.count-1), by: 1.0)),
-                       plotsY:minTemparatureOfWeek,
-                       graphXMax: 0 ,
-                       graphXMin: Float(minTemparatureOfWeek.count-1),
-                       graphYMax: 0,
-                       graphYMin: 40,
-                       viewXSize: 200,
-                       viewYSize: 200,
-                       graphColor: Color.blue
+                           plotsY:minTemparatureOfWeek,
+                           graphXMax: -0.5 ,
+                           graphXMin: Float(minTemparatureOfWeek.count-1)+0.5,
+                           graphYMax: (maxTemparatureOfWeek.max() == nil ? 0 : maxTemparatureOfWeek.max()!) + 5,
+                           graphYMin: (minTemparatureOfWeek.min() == nil ? 0 : minTemparatureOfWeek.min()!) - 5,
+                           graphColor: Color.blue,
+                           lineWidth: 2,
+                           hasPlotDot: true,
+                           xDataLabels: xDataLabels
                 )
+                // 最高気温の折れ線グラフ.
+                LineGraph( plotsX:Array(stride(from: 0.0, through: Float(maxTemparatureOfWeek.count-1), by: 1.0)),
+                           plotsY:maxTemparatureOfWeek,
+                           graphXMax: -0.5 ,
+                           graphXMin: Float(minTemparatureOfWeek.count-1)+0.5,
+                           graphYMax: (maxTemparatureOfWeek.max() == nil ? 0 : maxTemparatureOfWeek.max()!) + 5,
+                           graphYMin: (minTemparatureOfWeek.min() == nil ? 0 : minTemparatureOfWeek.min()!) - 5,
+                           graphColor: Color.red,
+                           lineWidth: 2,
+                           hasPlotDot: true
+
+                )
+                
+                Rectangle()
+                    .fill(Color.clear)
+                    .border(Color.black, width: 1)
+            }
+            .clipped()
+            .frame(height: 100)
+            
+            ScrollView {
+                VStack{
+                    HStack {
+                        Text("Date")
+                            .frame(width: 50)
+                        Text("Weather description")
+                        Spacer()
+                        Text("Max[°]")
+                            .frame(width: 60)
+                        Text("Min[°]")
+                            .frame(width: 60)
+                    }
+                    
+                    Rectangle()
+                        .fill(Color.gray)
+                        .frame(height:1)
+                    
+                    if dateOfWeek.count > 0 && weathercodeOfWeek.count == dateOfWeek.count && maxTemparatureOfWeek.count == dateOfWeek.count && minTemparatureOfWeek.count == dateOfWeek.count  {
+                        ForEach(0...(weathercodeOfWeek.count-1) , id:\.self) { i in
+                            HStack {
+                                Text(dateOfWeek[i])
+                                    .frame(width: 50)
+                                Text(descriptorByWeathercode[weathercodeOfWeek[i]]!)
+                                    .lineLimit(10)
+                                Spacer()
+                                Text(String(format: "%.1f", maxTemparatureOfWeek[i]))
+                                    .frame(width: 60)
+                                Text(String(format: "%.1f", minTemparatureOfWeek[i]))
+                                    .frame(width: 60)
+                            }
+                            Rectangle()
+                                .fill(Color.gray)
+                                .frame(height:1)
+                        }
+                    }
+                }
             }
         }
+        .padding()
     }
 }
 
 struct WeeklyWeatherView_Previews: PreviewProvider {
     static var previews: some View {
-        WeeklyWeatherView(weathercodeOfWeek: [0,0,0,0,0,0,0,], maxTemparatureOfWeek: [1,2,3,4,5,6,7], minTemparatureOfWeek: [1,2,3,4,5,6,7])
+        WeeklyWeatherView(dateOfWeek: ["8/11","8/12","8/13","8/14","8/15","8/16","8/17"], weathercodeOfWeek: [0,0,0,0,0,0,0,], maxTemparatureOfWeek: [1,2,3,4,5,6,7], minTemparatureOfWeek: [1,2,3,4,5,6,7])
     }
 }
 
@@ -121,49 +241,103 @@ struct LineGraph: View {
     var graphXMin : Float
     var graphYMax : Float
     var graphYMin : Float
-    var viewXSize : Float
-    var viewYSize : Float
     var graphColor : Color = Color.black
+    var lineWidth : CGFloat = 1.0
+    var hasPlotDot : Bool = false
+    // データのxに沿う様にグラフ下部に配置するテキスト. (データと数が違う場合も表示)
+    var xDataLabels : Array<String> = []
     
+    // preMap系から、mapped系への座標変換.
     private func mappedValue(_ preMapValue: Float, _ preMapMin: Float, _ preMapMax: Float, _ mappedMax: Float, _ mappedMin: Float) -> Float{
         return (preMapValue - preMapMin)/(preMapMax - preMapMin) * (mappedMax - mappedMin) + mappedMin
     }
     
+    // min - max の中央値で反対の位置（対称な位置)への座標変換.
     private func symmetryValueBetweenMinMax(_ value: Float, _ min: Float, _ max: Float) -> Float{
         return max - (value - min)
     }
     
-    private func graphXToViewX(_ graphX: Float) -> Float {
+    // グラフ上のX値から見た目のX座標に変換.
+    private func graphXToViewX(_ graphX: Float, _ graphXMin : Float, _ graphXMax : Float, _ viewXSize : Float) -> Float {
         return mappedValue(graphX, graphXMin, graphXMax, 0, viewXSize)
     }
     
-    private func graphYToViewY(_ graphY: Float) -> Float {
-        return symmetryValueBetweenMinMax(
-            mappedValue(graphY, graphYMin, graphYMax, 0, viewYSize),
-            0, viewYSize)
-        
+    // グラフ上のY値から見た目のY座標に変換.
+    private func graphYToViewY(_ graphY: Float, _ graphYMin : Float, _ graphYMax : Float, _ viewYSize : Float) -> Float {
+        //        return symmetryValueBetweenMinMax(
+        //            mappedValue(graphY, graphYMin, graphYMax, 0, viewYSize),
+        //            0, viewYSize)
+        return mappedValue(graphY, graphYMin, graphYMax, 0, viewYSize)
     }
     
     var body: some View {
-        Path { path in
+        GeometryReader { geometry in
+            Path { path in
+                if plotsX.count != plotsY.count { return }
+                let viewXSize = Float(geometry.size.width)
+                let viewYSize = Float(geometry.size.height)
+                
+                // 表示上のXYを各点で計算しながらPath描画
+                for i in 0..<plotsY.count {
+                    let xPoint = Int(round(graphXToViewX(
+                        plotsX[i], graphXMin, graphXMax, viewXSize
+                    )))
+                    let yPoint = Int(round(graphYToViewY(
+                        plotsY[i], graphYMin, graphYMax, viewYSize
+                    )))
+                    let point = CGPoint(x:xPoint, y:yPoint)
+                    
+                    if i == 0 {
+                        path.move(to: point)
+                    } else {
+                        path.addLine(to: point)
+                    }
+                }
+            }
+            .stroke(graphColor, lineWidth:lineWidth)
+            .frame(width: CGFloat(geometry.size.width), height: CGFloat(geometry.size.height))
             
-            path.move(to: CGPoint(
-                x:Int(graphXToViewX(plotsX[0])),
-                y:Int(graphYToViewY(plotsY[0]))
-            ))
-            for i in 1..<plotsY.count {
-                path.addLine(to: CGPoint(
-                    x:Int(graphXToViewX(plotsX[i])),
-                    y:Int(graphYToViewY(plotsY[i]))
-                ))
+            if hasPlotDot && plotsY.count > 0 && plotsX.count == plotsY.count {
+                let viewXSize = Float(geometry.size.width)
+                let viewYSize = Float(geometry.size.height)
+                let dotSize = Float(lineWidth+4.0)
+                ForEach (0...(plotsY.count-1), id:\.self) { i in
+                    // 表示上のXYを各点で計算.
+                    let xPoint = graphXToViewX(
+                        plotsX[i], graphXMin, graphXMax, viewXSize
+                    )
+                    let yPoint = graphYToViewY(
+                        plotsY[i], graphYMin, graphYMax, viewYSize
+                    )
+                    
+                    
+                    Rectangle ()
+                        .fill(graphColor)
+                        .frame(width: CGFloat(dotSize), height: CGFloat(dotSize))
+                        .position(
+                            x: CGFloat(xPoint),
+                            y: CGFloat(yPoint)
+                        )
+                }
+            }
+            if xDataLabels.count > 0 {
+                let labelNum = xDataLabels.count < plotsX.count ? xDataLabels.count : plotsX.count
+                let viewXSize = Float(geometry.size.width)
+                
+                ForEach (0...(labelNum-1), id:\.self) { i in
+                    let xPoint = graphXToViewX(
+                        plotsX[i], graphXMin, graphXMax, viewXSize
+                    )
+                    Text(xDataLabels[i])
+                        .font(.system(.footnote, design: .rounded))
+                        .position(x: CGFloat(xPoint), y:geometry.size.height - 8)
+                }
             }
         }
-        .stroke()
-        .fill(graphColor)
-        .frame(width: CGFloat(viewXSize), height: CGFloat(viewYSize))
     }
 }
 
+// From WMO Weathercodes.
 let descriptorByWeathercode : [Int: String] = [
     00 : "Cloud development not observed or not observable *",
     01 : "Clouds generally dissolving or becoming less developed *",

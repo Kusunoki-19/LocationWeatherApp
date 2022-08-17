@@ -19,7 +19,7 @@ struct OpenMeteoReturnJson : Codable{
     //    var timezone_abbreviation                :String
     //    var elevation                            :Float
     var current_weather                      :CurrentWeather
-    //    var daily_units                          :DailyUnits
+//    var daily_units                          :DailyUnits
     var daily                                :Daily
 }
 struct CurrentWeather : Codable {
@@ -27,12 +27,12 @@ struct CurrentWeather : Codable {
     //    var windspeed                        :Float
     //    var winddirection                    :Float
     var weathercode                      :Int
-    //    var time                             :String
+//    var time                             :String
     
 }
 
 //struct DailyUnits : Codable{
-////    var time                             :[String]
+//    var time                             :String
 //    var weathercode                      :[Int]
 //    var temperature_2m_max               :[Float]
 //    var temperature_2m_min               :[Float]
@@ -40,6 +40,7 @@ struct CurrentWeather : Codable {
 //}
 
 struct Daily : Codable {
+    var time                : [String]
     var weathercode         : [Int]
     var temperature_2m_max  : [Float]
     var temperature_2m_min  : [Float]
@@ -56,10 +57,11 @@ class LocationService: NSObject, ObservableObject, CLLocationManagerDelegate{
     
     // WebAPIリクエスト結果.
     // TODO: 初期値をnilに変更
-    @Published var currentWeathercodes : Int = 0
+    @Published var currentWeathercodes  : Int = 0
     @Published var currentTemparature   : Float = 0
     
-    @Published var weathercodeOfWeek   : Array<Int> = []
+    @Published var dateOfWeek           : Array<String> = []
+    @Published var weathercodeOfWeek    : Array<Int> = []
     @Published var maxTemparatureOfWeek : Array<Float> = []
     @Published var minTemparatureOfWeek : Array<Float> = []
     
@@ -134,14 +136,14 @@ class LocationService: NSObject, ObservableObject, CLLocationManagerDelegate{
         let request = URLRequest(url: requestUrl!)
         
         URLSession.shared.dataTask(with: request) { data, response, error in
-            //            print("--------response---------")
-            //            print("data:")
-            //            print(data)
-            //            print("response:")
-            //            print(response)
-            //            print("error:")
-            //            print(error)
-            //            print("-------------------------")
+            // print("--------response---------")
+            // print("data:")
+            // print(data)
+            // print("response:")
+            // print(response)
+            // print("error:")
+            // print(error)
+            // print("-------------------------")
             self.updateWeatherInfomationByRawJson(data!)
         }.resume()
     }
@@ -158,6 +160,7 @@ class LocationService: NSObject, ObservableObject, CLLocationManagerDelegate{
             self.maxTemparatureOfWeek = openMeteoReturnJson.daily.temperature_2m_max
             self.minTemparatureOfWeek = openMeteoReturnJson.daily.temperature_2m_min
             self.weathercodeOfWeek = openMeteoReturnJson.daily.weathercode
+            self.dateOfWeek = openMeteoReturnJson.daily.time
             
         }
         catch {

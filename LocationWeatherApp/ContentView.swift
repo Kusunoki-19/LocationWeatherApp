@@ -9,8 +9,8 @@ import SwiftUI
 
 // ページ一覧.
 enum Pages : String , CaseIterable , Identifiable {
-    case TodaysWeather   = "Today's Weather"
-    case WeeklyWeather   = "Weekly Weather"
+    case TodaysWeather   = "Today"
+    case WeeklyWeather   = "Week"
     
     var id: Self { self }
 }
@@ -28,43 +28,54 @@ struct ContentView: View {
     
     
     var body: some View {
-        ZStack(alignment: .bottom) {
+        
+        // main content.
+        VStack() {
+            HStack(alignment: .top) {
+                Picker("Page", selection: $selectedPage) {
+                    ForEach(Pages.allCases) { page in
+                        Text(page.rawValue)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .frame(width: 150)
+                
+                Spacer()
+                
+                VStack {
+                    HStack {
+                        Button("\(Image(systemName: "arrow.clockwise"))",action: locationService.requestUpdateLocation).padding()
+                        VStack {
+                            Text("latitude")
+                                .font(.system(.footnote, design: .rounded))
+                            Text("longitude")
+                                .font(.system(.footnote, design: .rounded))
+
+                        }
+                        VStack {
+                            Text(String(format: "%.1f..", locationService.currentLatitude != nil ? locationService.currentLatitude! : 0))
+                                .font(.system(.footnote, design: .rounded))
+                            Text(String(format: "%.1f..", locationService.currentLongitude != nil ? locationService.currentLongitude! : 0))
+                                .font(.system(.footnote, design: .rounded))
+                        }
+                    }
+                    Text("(Weathercode based on WMOWeathercode)")
+                        .font(.system(.footnote, design: .rounded))
+                }
+            }.padding()
+            
             ChosenWeatherPageView(
                 selectedPage: selectedPage,
                 currentWeathercode: locationService.currentWeathercodes,
                 currentTemparature: locationService.currentTemparature,
+                dateOfWeek: locationService.dateOfWeek,
                 weathercodeOfWeek: locationService.weathercodeOfWeek,
                 maxTemparatureOfWeek: locationService.maxTemparatureOfWeek,
                 minTemparatureOfWeek: locationService.minTemparatureOfWeek
             )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .overlay(
-            VStack {
-                Button("Get Location \(Image(systemName: "location.square.fill"))",action: locationService.requestUpdateLocation).padding()
-                HStack {
-                    VStack {
-                        Text("緯度")
-                        Text("経度")
-                        Text("直近気温")
-                        Text("直近天気")
-                    }
-                    VStack {
-                        Text(String(format: "%.5f", locationService.currentLatitude != nil ? locationService.currentLatitude! : 0))
-                        Text(String(format: "%.5f", locationService.currentLongitude != nil ? locationService.currentLongitude! : 0))
-                        Text(String(format: "%f", locationService.currentTemparature))
-                        Text(String(format: "%d", locationService.currentWeathercodes))
-                   }
-                }
-            }
-            ,alignment: .topTrailing)
-        .overlay(
-            Picker("Page", selection: $selectedPage) {
-                ForEach(Pages.allCases) { page in
-                    Text(page.rawValue)
-                }
-            }.pickerStyle(.segmented)
-            ,alignment: .bottom)
     }
 }
 
