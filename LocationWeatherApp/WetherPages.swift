@@ -15,6 +15,7 @@ struct ChosenWeatherPageView: View {
     
     var currentWeathercode  : Int = 0
     var currentTemparature   : Float = 0
+    var dateOfWeek   : Array<String> = []
     var weathercodeOfWeek   : Array<Int> = []
     var maxTemparatureOfWeek : Array<Float> = []
     var minTemparatureOfWeek : Array<Float> = []
@@ -22,9 +23,15 @@ struct ChosenWeatherPageView: View {
     var body: some View {
         switch selectedPage {
         case .TodaysWeather:
-            TodayWeatherView(currentWeathercode: currentWeathercode, currentTemparature: currentTemparature)
+            TodayWeatherView(
+                currentWeathercode: currentWeathercode,
+                currentTemparature: currentTemparature,
+                todayWeathercode: weathercodeOfWeek.first,
+                todayMinTemparature: minTemparatureOfWeek.first,
+                todayMaxTemparature: maxTemparatureOfWeek.first
+            )
         case .WeeklyWeather:
-            WeeklyWeatherView(weathercodeOfWeek: weathercodeOfWeek, maxTemparatureOfWeek: maxTemparatureOfWeek, minTemparatureOfWeek: minTemparatureOfWeek)
+            WeeklyWeatherView(dateOfWeek: dateOfWeek, weathercodeOfWeek: weathercodeOfWeek, maxTemparatureOfWeek: maxTemparatureOfWeek, minTemparatureOfWeek: minTemparatureOfWeek)
         }
     }
 }
@@ -36,19 +43,80 @@ struct ChosenWeatherPageView_Previews: PreviewProvider {
 }
 
 struct TodayWeatherView: View {
-    var currentWeathercode : Int
-    var currentTemparature : Float
+    var currentWeathercode : Int?
+    var currentTemparature : Float?
+    var todayWeathercode : Int?
+    var todayMinTemparature : Float?
+    var todayMaxTemparature : Float?
     
     var body: some View {
         VStack {
-            Text(String(format: "%.1f°", currentTemparature))
-                .font(.system(.largeTitle, design: .rounded))
-            Text(String(format: "Present Weather [WMO Code 4677]:%d", currentWeathercode))
-            HStack {
-                Text("Description:")
-                Text(descriptorByWeathercode[currentWeathercode]!)
+            if currentWeathercode != nil && currentTemparature != nil && todayWeathercode != nil && todayMinTemparature != nil && todayMaxTemparature != nil {
+                Rectangle()
+                    .fill(Color.gray)
+                    .frame(height:1)
+                
+                HStack {
+                    Text("Present")
+                        .font(.system(.largeTitle, design: .rounded))
+                    Spacer()
+                    Text(String(format: "%.1f°", currentTemparature!))
+                        .font(.system(.largeTitle, design: .rounded))
+                }.padding()
+                
+                VStack {
+                    HStack {
+                        Text("Weathercode")
+                            .frame(width: 120)
+                        Text("Description")
+                        Spacer()
+                    }
+                    HStack {
+                        Text(String(format: "%d", currentWeathercode!))
+                            .frame(width: 120)
+                        Text(descriptorByWeathercode[currentWeathercode!]!)
+                        Spacer()
+                    }
+                }.padding()
+                
+                
+                Rectangle()
+                    .fill(Color.gray)
+                    .frame(height:1)
+                
+                
+                
+                HStack {
+                    Text("Today")
+                        .font(.system(.largeTitle, design: .rounded))
+                    Spacer()
+                    Text(String(format: "Max: %.1f°", todayMaxTemparature!))
+                    Text(String(format: "Min: %.1f°", todayMinTemparature!))
+                }.padding()
+                
+                VStack {
+                    HStack {
+                        Text("Weathercode")
+                            .frame(width: 120)
+                        Text("Description")
+                        Spacer()
+                    }
+                    HStack {
+                        Text(String(format: "%d", todayWeathercode!))
+                            .frame(width: 120)
+                        Text(descriptorByWeathercode[todayWeathercode!]!)
+                        Spacer()
+                    }
+                }.padding()
+                
+                Rectangle()
+                    .fill(Color.gray)
+                    .frame(height:1)
+                
+                Spacer()
             }
         }
+        .padding()
     }
 }
 
@@ -59,6 +127,7 @@ struct TodayWeatherView_Previews: PreviewProvider {
 }
 
 struct WeeklyWeatherView: View {
+    var dateOfWeek   : Array<String>
     var weathercodeOfWeek   : Array<Int>
     var maxTemparatureOfWeek : Array<Float>
     var minTemparatureOfWeek : Array<Float>
@@ -87,41 +156,49 @@ struct WeeklyWeatherView: View {
             }
             .frame(height: 100)
             
-            VStack{
-                HStack {
-                    Text("Weather description")
-                    Spacer()
-                    Text("max[°]")
-                        .frame(width: 60)
-                    Text("min[°]")
-                        .frame(width: 60)
-                }
-                Rectangle()
-                    .fill(Color.gray)
-                    .frame(height:1)
-                if (weathercodeOfWeek.count > 0) {
-                    ForEach(0...(weathercodeOfWeek.count-1) , id:\.self) { i in
-                        HStack {
-                            Text(descriptorByWeathercode[weathercodeOfWeek[i]]!)
-                            Spacer()
-                            Text(String(format: "%.1f", maxTemparatureOfWeek[i]))
-                                .frame(width: 60)
-                            Text(String(format: "%.1f", minTemparatureOfWeek[i]))
-                                .frame(width: 60)
+            ScrollView {
+                VStack{
+                    HStack {
+                        Text("Date")
+                            .frame(width: 50)
+                        Text("Weather description")
+                        Spacer()
+                        Text("Max[°]")
+                            .frame(width: 60)
+                        Text("Min[°]")
+                            .frame(width: 60)
+                    }
+                    Rectangle()
+                        .fill(Color.gray)
+                        .frame(height:1)
+                    if (weathercodeOfWeek.count > 0) {
+                        ForEach(0...(weathercodeOfWeek.count-1) , id:\.self) { i in
+                            HStack {
+                                Text(dateOfWeek[i])
+                                    .frame(width: 50)
+                                Text(descriptorByWeathercode[weathercodeOfWeek[i]]!)
+                                    .lineLimit(10)
+                                Spacer()
+                                Text(String(format: "%.1f", maxTemparatureOfWeek[i]))
+                                    .frame(width: 60)
+                                Text(String(format: "%.1f", minTemparatureOfWeek[i]))
+                                    .frame(width: 60)
+                            }
+                            Rectangle()
+                                .fill(Color.gray)
+                                .frame(height:1)
                         }
-                        Rectangle()
-                            .fill(Color.gray)
-                            .frame(height:1)
                     }
                 }
             }
         }
+        .padding()
     }
 }
 
 struct WeeklyWeatherView_Previews: PreviewProvider {
     static var previews: some View {
-        WeeklyWeatherView(weathercodeOfWeek: [0,0,0,0,0,0,0,], maxTemparatureOfWeek: [1,2,3,4,5,6,7], minTemparatureOfWeek: [1,2,3,4,5,6,7])
+        WeeklyWeatherView(dateOfWeek: ["8/11","8/12","8/13","8/14","8/15","8/16","8/17"], weathercodeOfWeek: [0,0,0,0,0,0,0,], maxTemparatureOfWeek: [1,2,3,4,5,6,7], minTemparatureOfWeek: [1,2,3,4,5,6,7])
     }
 }
 
@@ -151,9 +228,9 @@ struct LineGraph: View {
     
     // グラフ上のY値から見た目のY座標に変換.
     private func graphYToViewY(_ graphY: Float, _ graphYMin : Float, _ graphYMax : Float, _ viewYSize : Float) -> Float {
-//        return symmetryValueBetweenMinMax(
-//            mappedValue(graphY, graphYMin, graphYMax, 0, viewYSize),
-//            0, viewYSize)
+        //        return symmetryValueBetweenMinMax(
+        //            mappedValue(graphY, graphYMin, graphYMax, 0, viewYSize),
+        //            0, viewYSize)
         return mappedValue(graphY, graphYMin, graphYMax, 0, viewYSize)
     }
     

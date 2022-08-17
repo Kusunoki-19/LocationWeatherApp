@@ -61,6 +61,7 @@ struct ContentView: View {
                 selectedPage: selectedPage,
                 currentWeathercode: locationService.currentWeathercodes,
                 currentTemparature: locationService.currentTemparature,
+                dateOfWeek: locationService.dateOfWeek,
                 weathercodeOfWeek: locationService.weathercodeOfWeek,
                 maxTemparatureOfWeek: locationService.maxTemparatureOfWeek,
                 minTemparatureOfWeek: locationService.minTemparatureOfWeek
