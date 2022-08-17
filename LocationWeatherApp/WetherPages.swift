@@ -138,24 +138,43 @@ struct WeeklyWeatherView: View {
             ZStack {
                 Rectangle()
                     .fill(Color.white)
-                    .border(Color.black, width: 1)
-                LineGraph( plotsX:Array(stride(from: 0.0, through: Float(maxTemparatureOfWeek.count-1), by: 1.0)),
-                           plotsY:maxTemparatureOfWeek,
-                           graphXMax: 0 ,
-                           graphXMin: Float(maxTemparatureOfWeek.count-1),
-                           graphYMax: (maxTemparatureOfWeek.max() == nil ? 0 : maxTemparatureOfWeek.max()!) + 5,
-                           graphYMin: (minTemparatureOfWeek.min() == nil ? 0 : minTemparatureOfWeek.min()!) - 5,
-                           graphColor: Color.red
-                )
+                // 10°, 20°, 30° 気温目盛線.
+                ForEach(1...3 , id:\.self) { i in
+                    LineGraph( plotsX:[0, 1],
+                               plotsY:[Float(i*10),Float(i*10)],
+                               graphXMax: 0 ,
+                               graphXMin: 1 ,
+                               graphYMax: (maxTemparatureOfWeek.max() == nil ? 0 : maxTemparatureOfWeek.max()!) + 5,
+                               graphYMin: (minTemparatureOfWeek.min() == nil ? 0 : minTemparatureOfWeek.min()!) - 5,
+                               graphColor: Color.gray
+                    )
+                }
+                // 最低気温の折れ線グラフ.
                 LineGraph( plotsX:Array(stride(from: 0.0, through: Float(minTemparatureOfWeek.count-1), by: 1.0)),
                            plotsY:minTemparatureOfWeek,
                            graphXMax: 0 ,
                            graphXMin: Float(minTemparatureOfWeek.count-1),
                            graphYMax: (maxTemparatureOfWeek.max() == nil ? 0 : maxTemparatureOfWeek.max()!) + 5,
                            graphYMin: (minTemparatureOfWeek.min() == nil ? 0 : minTemparatureOfWeek.min()!) - 5,
-                           graphColor: Color.blue
+                           graphColor: Color.blue,
+                           lineWidth: 2
                 )
+                // 最高気温の折れ線グラフ.
+                LineGraph( plotsX:Array(stride(from: 0.0, through: Float(maxTemparatureOfWeek.count-1), by: 1.0)),
+                           plotsY:maxTemparatureOfWeek,
+                           graphXMax: 0 ,
+                           graphXMin: Float(maxTemparatureOfWeek.count-1),
+                           graphYMax: (maxTemparatureOfWeek.max() == nil ? 0 : maxTemparatureOfWeek.max()!) + 5,
+                           graphYMin: (minTemparatureOfWeek.min() == nil ? 0 : minTemparatureOfWeek.min()!) - 5,
+                           graphColor: Color.red,
+                           lineWidth: 2
+
+                )
+                Rectangle()
+                    .fill(Color.clear)
+                    .border(Color.black, width: 1)
             }
+            .clipped()
             .frame(height: 100)
             
             ScrollView {
@@ -214,6 +233,7 @@ struct LineGraph: View {
     var graphYMax : Float
     var graphYMin : Float
     var graphColor : Color = Color.black
+    var lineWidth : CGFloat = 1.0
     
     // preMap系から、mapped系への座標変換.
     private func mappedValue(_ preMapValue: Float, _ preMapMin: Float, _ preMapMax: Float, _ mappedMax: Float, _ mappedMin: Float) -> Float{
@@ -262,8 +282,7 @@ struct LineGraph: View {
                     }
                 }
             }
-            .stroke()
-            .fill(graphColor)
+            .stroke(graphColor, lineWidth:lineWidth)
             .frame(width: CGFloat(geometry.size.width), height: CGFloat(geometry.size.height))
         }
     }
