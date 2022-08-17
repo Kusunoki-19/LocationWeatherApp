@@ -30,21 +30,8 @@ struct ContentView: View {
     var body: some View {
         
         // main content.
-        ZStack(alignment: .bottom) {
-            ChosenWeatherPageView(
-                selectedPage: selectedPage,
-                currentWeathercode: locationService.currentWeathercodes,
-                currentTemparature: locationService.currentTemparature,
-                weathercodeOfWeek: locationService.weathercodeOfWeek,
-                maxTemparatureOfWeek: locationService.maxTemparatureOfWeek,
-                minTemparatureOfWeek: locationService.minTemparatureOfWeek
-            )
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        
-        // Top overlay.
-        .overlay(
-            HStack {
+        VStack() {
+            HStack(alignment: .top) {
                 Picker("Page", selection: $selectedPage) {
                     ForEach(Pages.allCases) { page in
                         Text(page.rawValue)
@@ -69,8 +56,18 @@ struct ContentView: View {
                     }
                 }
             }.padding()
-            ,alignment: .top
-        )
+            
+            ChosenWeatherPageView(
+                selectedPage: selectedPage,
+                currentWeathercode: locationService.currentWeathercodes,
+                currentTemparature: locationService.currentTemparature,
+                weathercodeOfWeek: locationService.weathercodeOfWeek,
+                maxTemparatureOfWeek: locationService.maxTemparatureOfWeek,
+                minTemparatureOfWeek: locationService.minTemparatureOfWeek
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
