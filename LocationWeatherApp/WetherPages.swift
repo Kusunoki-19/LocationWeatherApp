@@ -133,6 +133,8 @@ struct WeeklyWeatherView: View {
     var weathercodeOfWeek   : Array<Int>
     var maxTemparatureOfWeek : Array<Float>
     var minTemparatureOfWeek : Array<Float>
+    
+
     var body: some View {
         VStack {
             ZStack {
@@ -149,22 +151,26 @@ struct WeeklyWeatherView: View {
                                graphColor: Color.gray
                     )
                 }
+                let xDataLabels : Array<String> = dateOfWeek.map{
+                    $0.components(separatedBy: "-").count == 3 ? ($0.components(separatedBy: "-")[1] + "/" + $0.components(separatedBy: "-")[2]) : ""
+                }
                 // 最低気温の折れ線グラフ.
                 LineGraph( plotsX:Array(stride(from: 0.0, through: Float(minTemparatureOfWeek.count-1), by: 1.0)),
                            plotsY:minTemparatureOfWeek,
-                           graphXMax: -0.1 ,
-                           graphXMin: Float(minTemparatureOfWeek.count-1)+0.1,
+                           graphXMax: -0.5 ,
+                           graphXMin: Float(minTemparatureOfWeek.count-1)+0.5,
                            graphYMax: (maxTemparatureOfWeek.max() == nil ? 0 : maxTemparatureOfWeek.max()!) + 5,
                            graphYMin: (minTemparatureOfWeek.min() == nil ? 0 : minTemparatureOfWeek.min()!) - 5,
                            graphColor: Color.blue,
                            lineWidth: 2,
-                           hasPlotDot: true
+                           hasPlotDot: true,
+                           xDataLabels: xDataLabels
                 )
                 // 最高気温の折れ線グラフ.
                 LineGraph( plotsX:Array(stride(from: 0.0, through: Float(maxTemparatureOfWeek.count-1), by: 1.0)),
                            plotsY:maxTemparatureOfWeek,
-                           graphXMax: -0.1 ,
-                           graphXMin: Float(minTemparatureOfWeek.count-1)+0.1,
+                           graphXMax: -0.5 ,
+                           graphXMin: Float(minTemparatureOfWeek.count-1)+0.5,
                            graphYMax: (maxTemparatureOfWeek.max() == nil ? 0 : maxTemparatureOfWeek.max()!) + 5,
                            graphYMin: (minTemparatureOfWeek.min() == nil ? 0 : minTemparatureOfWeek.min()!) - 5,
                            graphColor: Color.red,
@@ -238,6 +244,8 @@ struct LineGraph: View {
     var graphColor : Color = Color.black
     var lineWidth : CGFloat = 1.0
     var hasPlotDot : Bool = false
+    // データのxに沿う様にグラフ下部に配置するテキスト. (データと数が違う場合も表示)
+    var xDataLabels : Array<String> = []
     
     // preMap系から、mapped系への座標変換.
     private func mappedValue(_ preMapValue: Float, _ preMapMin: Float, _ preMapMax: Float, _ mappedMax: Float, _ mappedMin: Float) -> Float{
@@ -289,7 +297,7 @@ struct LineGraph: View {
             .stroke(graphColor, lineWidth:lineWidth)
             .frame(width: CGFloat(geometry.size.width), height: CGFloat(geometry.size.height))
             
-            if hasPlotDot  && plotsX.count == plotsY.count {
+            if hasPlotDot && plotsY.count > 0 && plotsX.count == plotsY.count {
                 let viewXSize = Float(geometry.size.width)
                 let viewYSize = Float(geometry.size.height)
                 let dotSize = Float(lineWidth+4.0)
@@ -310,6 +318,19 @@ struct LineGraph: View {
                             x: CGFloat(xPoint),
                             y: CGFloat(yPoint)
                         )
+                }
+            }
+            if xDataLabels.count > 0 {
+                let labelNum = xDataLabels.count < plotsX.count ? xDataLabels.count : plotsX.count
+                let viewXSize = Float(geometry.size.width)
+                
+                ForEach (0...(labelNum-1), id:\.self) { i in
+                    let xPoint = graphXToViewX(
+                        plotsX[i], graphXMin, graphXMax, viewXSize
+                    )
+                    Text(xDataLabels[i])
+                        .font(.system(.footnote, design: .rounded))
+                        .position(x: CGFloat(xPoint), y:geometry.size.height - 8)
                 }
             }
         }
